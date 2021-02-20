@@ -28,7 +28,7 @@ class WeatherControllerTest {
 	@Test
 	public void getWeather() throws Exception {
 		String city = "city";
-		String country = "country";
+		String country = "AU";
 		String desc = "cloud";
 
 		when(weatherService.getWeather(city, country)).thenReturn(new WeatherDto(city, country, desc));
@@ -48,10 +48,35 @@ class WeatherControllerTest {
 	public void shouldReturnErrorIfMissCity() throws Exception {
 		mockMvc.perform(
 				MockMvcRequestBuilders.get("/weather")
-						.param("country", "country")
+						.param("country", "AU")
 						.contentType(MediaType.APPLICATION_JSON_VALUE))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.message").value("Required String parameter 'city' is not present"))
+				.andExpect(jsonPath("$.details").value("Bad Request"));
+	}
+
+
+	@Test
+	public void shouldReturnErrorIfCityIsEmpty() throws Exception {
+		mockMvc.perform(
+				MockMvcRequestBuilders.get("/weather")
+						.param("city", "")
+						.param("country", "AU")
+						.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("getWeather.city: must not be blank"))
+				.andExpect(jsonPath("$.details").value("Bad Request"));
+	}
+
+	@Test
+	public void shouldReturnErrorIfCountryIsWrongFormat() throws Exception {
+		mockMvc.perform(
+				MockMvcRequestBuilders.get("/weather")
+						.param("city", "city")
+						.param("country", "country")
+						.contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("getWeather.country: Country should follow ISO 3166-1 alpha-2 standard"))
 				.andExpect(jsonPath("$.details").value("Bad Request"));
 	}
 }

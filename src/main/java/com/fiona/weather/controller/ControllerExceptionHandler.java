@@ -8,12 +8,19 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
+
 @Slf4j
 @RestControllerAdvice
 public class ControllerExceptionHandler {
+
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public ResponseEntity<WeatherErrorDto> handleException(MissingServletRequestParameterException exception){
-		log.warn("There is MissingServletRequestParameterException occurred");
+		return new ResponseEntity(new WeatherErrorDto(exception.getMessage(), "Bad Request"), HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<WeatherErrorDto> handleValidationException(ConstraintViolationException exception){
 		return new ResponseEntity(new WeatherErrorDto(exception.getMessage(), "Bad Request"), HttpStatus.BAD_REQUEST);
 	}
 
