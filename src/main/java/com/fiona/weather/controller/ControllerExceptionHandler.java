@@ -1,6 +1,8 @@
 package com.fiona.weather.controller;
 
 import com.fiona.weather.dto.WeatherErrorDto;
+import com.fiona.weather.exception.ExceedLimitationException;
+import com.fiona.weather.exception.InvalidTokenException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,14 +16,16 @@ import javax.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class ControllerExceptionHandler {
 
-	@ExceptionHandler(MissingServletRequestParameterException.class)
-	public ResponseEntity<WeatherErrorDto> handleException(MissingServletRequestParameterException exception){
+	@ExceptionHandler({MissingServletRequestParameterException.class,
+			ConstraintViolationException.class,
+			InvalidTokenException.class})
+	public ResponseEntity<WeatherErrorDto> handleBadRequestException(Exception exception){
 		return new ResponseEntity(new WeatherErrorDto(exception.getMessage(), "Bad Request"), HttpStatus.BAD_REQUEST);
 	}
 
-	@ExceptionHandler(ConstraintViolationException.class)
-	public ResponseEntity<WeatherErrorDto> handleValidationException(ConstraintViolationException exception){
-		return new ResponseEntity(new WeatherErrorDto(exception.getMessage(), "Bad Request"), HttpStatus.BAD_REQUEST);
+	@ExceptionHandler(ExceedLimitationException.class)
+	public ResponseEntity<WeatherErrorDto> handleExceedLimitException(ExceedLimitationException exception){
+		return new ResponseEntity(new WeatherErrorDto("Exceed your limitation, please wait and retry", "Exceed limitation"), HttpStatus.TOO_MANY_REQUESTS);
 	}
 
 	@ExceptionHandler(Exception.class)

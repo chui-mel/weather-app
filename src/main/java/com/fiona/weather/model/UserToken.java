@@ -6,29 +6,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Builder
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "weather")
-public class Weather {
+@Table(name = "user_token")
+public class UserToken {
 	@Id
 	@GeneratedValue( strategy = GenerationType.IDENTITY)
 	@Column(name = "id", updatable = false, nullable = false)
 	private Long id;
 
 	@Column(unique = true, nullable = false)
-	private String city;
+	private String token;
 
-	@Column
-	private String country;
+	@Column(nullable = false)
+	private int rateLimit;
 
-	@Column
-	private String description;
-
-	@Column
-	private OffsetDateTime updatedTime;
+	@OneToMany(mappedBy = "token", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<TokenUsage> usages;
 }

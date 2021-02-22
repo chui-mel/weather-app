@@ -23,6 +23,8 @@ public class OpenWeatherService {
 
 	@SneakyThrows
 	public String getWeather(String city, String country) {
+		log.info("Fetching weather api for city: {} and country: {}", city, country);
+
 		RestTemplate restTemplate = new RestTemplate();
 		String response = restTemplate.getForObject(weatherUrl(city, country), String.class);
 

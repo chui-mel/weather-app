@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -17,21 +18,30 @@ public class WeatherService {
 	private final OpenWeatherService openWeatherService;
 
 	public WeatherDto getWeather(String city, String country) {
-		Weather weather = fetchFromApi(city, country);
-		saveWeather(weather);
-		return new WeatherDto(city, country, weather.getDescription());
+		AtomicReference<Long> foundId = new AtomicReference<>();
+
+		Weather updatedWeather = weatherRepository.findByCity(city)
+				.filter(weather -> {
+					foundId.set(weather.getId());
+					return weather.getUpdatedTime().isAfter(OffsetDateTime.now().minusMinutes(10L));
+				}).orElseGet(() -> fetchFromApiAndSave(city, country, foundId.get()));
+
+		return new WeatherDto(city, country, updatedWeather.getDescription());
 	}
 
-	private Weather fetchFromApi(String city, String country) {
+	private Weather fetchFromApiAndSave(String city, String country, Long foundId) {
 		String weatherInfo = openWeatherService.getWeather(city, country);
 
-		return Weather.builder()
+		Weather updatedWeather =  Weather.builder()
+				.id(foundId)
 				.city(city)
 				.country(country)
 				.description(weatherInfo)
-				.createdTime(OffsetDateTime.now())
 				.updatedTime(OffsetDateTime.now())
 				.build();
+
+		saveWeather(updatedWeather);
+		return updatedWeather;
 	}
 
 	private void saveWeather(Weather weather) {
