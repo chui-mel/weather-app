@@ -18,7 +18,7 @@ spring:
 openweather:
   api:
     url: http://api.openweathermap.org/data/2.5/weather
-    token:
+    token: FIXME
 
 logging:
   pattern:

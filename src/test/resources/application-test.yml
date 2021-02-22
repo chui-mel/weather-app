@@ -1,0 +1,4 @@
+openweather:
+  api:
+    url: http://localhost:9999/weather
+    token: token
