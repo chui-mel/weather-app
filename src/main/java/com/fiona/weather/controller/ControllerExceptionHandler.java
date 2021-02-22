@@ -28,7 +28,7 @@ public class ControllerExceptionHandler {
 
 	@ExceptionHandler(CityNotFoundException.class)
 	public ResponseEntity<WeatherErrorDto> handleNotFoundException(CityNotFoundException exception){
-		return new ResponseEntity(new WeatherErrorDto("City Not Found", "check your city"), HttpStatus.NOT_FOUND);
+		return new ResponseEntity(new WeatherErrorDto("City Not Found", "check your city and country"), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(ExceedLimitationException.class)

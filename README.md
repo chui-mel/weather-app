@@ -45,4 +45,4 @@ This is the example:
 
 ## Assumptions
 * didn't consider rate limitation in Openweather API side
-* since the overall traffic is pretty low, didn't choose 3rd party lib for rate limits and faster ways for storing requests history,
+* since the overall traffic is pretty low, didn't choose 3rd party lib for rate limits and faster ways for storing requests history

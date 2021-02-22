@@ -20,7 +20,7 @@ public class WeatherService {
 	public WeatherDto getWeather(String city, String country) {
 		AtomicReference<Long> foundId = new AtomicReference<>();
 
-		Weather updatedWeather = weatherRepository.findByCity(city)
+		Weather updatedWeather = weatherRepository.findByCityAndCountry(city, country)
 				.filter(weather -> {
 					foundId.set(weather.getId());
 					return weather.getUpdatedTime().isAfter(OffsetDateTime.now().minusMinutes(10L));

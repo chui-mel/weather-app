@@ -34,7 +34,7 @@ class WeatherServiceTest {
 		String country = "au";
 		String description = "cloud";
 
-		when(weatherRepository.findByCity(city)).thenReturn(Optional.empty());
+		when(weatherRepository.findByCityAndCountry(city, country)).thenReturn(Optional.empty());
 		when(openWeatherService.getWeather(city, country)).thenReturn(description);
 
 		WeatherDto weatherDto = service.getWeather(city, country);
@@ -57,7 +57,7 @@ class WeatherServiceTest {
 				.description(description)
 				.updatedTime(OffsetDateTime.now().minusMinutes(8L))
 				.build();
-		when(weatherRepository.findByCity(city)).thenReturn(Optional.of(weather));
+		when(weatherRepository.findByCityAndCountry(city, country)).thenReturn(Optional.of(weather));
 
 		WeatherDto weatherDto = service.getWeather(city, country);
 
@@ -80,7 +80,7 @@ class WeatherServiceTest {
 				.description("old description")
 				.updatedTime(OffsetDateTime.now().minusMinutes(11L))
 				.build();
-		when(weatherRepository.findByCity(city)).thenReturn(Optional.of(weather));
+		when(weatherRepository.findByCityAndCountry(city, country)).thenReturn(Optional.of(weather));
 		when(openWeatherService.getWeather(city, country)).thenReturn(description);
 
 		WeatherDto weatherDto = service.getWeather(city, country);
@@ -97,7 +97,7 @@ class WeatherServiceTest {
 		String country = "au";
 		String description = "cloud";
 
-		when(weatherRepository.findByCity(city)).thenReturn(Optional.empty());
+		when(weatherRepository.findByCityAndCountry(city, country)).thenReturn(Optional.empty());
 		when(openWeatherService.getWeather(city, country)).thenReturn(description);
     when(weatherRepository.save(any(Weather.class))).thenThrow(new RuntimeException("Error occurred"));
 
@@ -112,7 +112,7 @@ class WeatherServiceTest {
 	public void throwExceptionWhenFailedToFetchWeather() {
 		String expectedMessage = "Error Occurred";
 
-		when(weatherRepository.findByCity("city")).thenReturn(Optional.empty());
+		when(weatherRepository.findByCityAndCountry("city", "country")).thenReturn(Optional.empty());
 		when(openWeatherService.getWeather(anyString(), anyString())).thenThrow(new RuntimeException(expectedMessage));
 
 		Exception exception = assertThrows(RuntimeException.class,

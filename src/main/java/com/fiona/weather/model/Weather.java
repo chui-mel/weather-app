@@ -20,10 +20,10 @@ public class Weather {
 	@Column(name = "id", updatable = false, nullable = false)
 	private Long id;
 
-	@Column(unique = true, nullable = false)
+	@Column(nullable = false)
 	private String city;
 
-	@Column
+	@Column(nullable = false)
 	private String country;
 
 	@Column
