@@ -41,6 +41,6 @@ public class ControllerExceptionHandler {
 			Exception.class })
 	public ResponseEntity<WeatherErrorDto> handleException(Exception exception){
 		log.error("There is Exception occurred", exception);
-		return new ResponseEntity(new WeatherErrorDto("Error happends in server side", "please contact admin"), HttpStatus.SERVICE_UNAVAILABLE);
+		return new ResponseEntity(new WeatherErrorDto("Error happens in server side", "please contact admin"), HttpStatus.SERVICE_UNAVAILABLE);
 	}
 }

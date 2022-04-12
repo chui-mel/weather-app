@@ -1,8 +1,7 @@
 package com.fiona.weather.controller;
 
+import com.fiona.weather.aop.RateLimit;
 import com.fiona.weather.dto.WeatherDto;
-import com.fiona.weather.exception.ExceedLimitationException;
-import com.fiona.weather.service.RateLimitService;
 import com.fiona.weather.service.WeatherService;
 import com.fiona.weather.validator.ISO3166CountryCode;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotBlank;
-import java.time.OffsetDateTime;
 
 @Slf4j
 @RestController
@@ -24,17 +22,13 @@ import java.time.OffsetDateTime;
 @Validated
 public class WeatherController {
 
-	private final RateLimitService rateLimitService;
 	private final WeatherService weatherService;
 
 	@GetMapping
+	@RateLimit
 	public ResponseEntity<WeatherDto> getWeather(@RequestParam("city") @NotBlank String city,
 																							 @RequestParam("country") @ISO3166CountryCode String country,
 																							 @RequestParam("token") @NotBlank String token) {
-
-		if (rateLimitService.exceededLimit(token, OffsetDateTime.now())) {
-			throw new ExceedLimitationException();
-		}
 		return ResponseEntity.ok(weatherService.getWeather(city, country));
 	}
 }

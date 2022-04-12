@@ -1,9 +1,11 @@
-package com.fiona.weather.service;
+package com.fiona.weather.aop;
 
+import com.fiona.weather.exception.ExceedLimitationException;
 import com.fiona.weather.exception.InvalidTokenException;
 import com.fiona.weather.model.UserToken;
 import com.fiona.weather.repository.TokenUsageRepository;
 import com.fiona.weather.repository.UserTokenRepository;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -12,13 +14,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class RateLimitServiceTest {
-
+class RateLimitAspectTest {
 	@Mock
 	private UserTokenRepository userTokenRepository;
 
@@ -26,20 +27,20 @@ class RateLimitServiceTest {
 	private TokenUsageRepository tokenUsageRepository;
 
 	@InjectMocks
-	private RateLimitService service;
+	private RateLimitAspect rateLimitAspect;
 
 	@Test
-	void notExceededLimit() {
+	void notExceededLimit() throws Throwable {
 		String validToken = "valid";
-		OffsetDateTime accessTime = OffsetDateTime.now();
 
 		UserToken userToken = UserToken.builder().id(1L).token(validToken).rateLimit(5).build();
 		when(userTokenRepository.findByToken(validToken)).thenReturn(Optional.of(userToken));
-		when(tokenUsageRepository.countByTokenIdAfter(1L, accessTime.minusHours(1L))).thenReturn(4);
+		when(tokenUsageRepository.countByTokenIdAfter(eq(1L), any(OffsetDateTime.class))).thenReturn(4);
 
-		boolean exceeded = service.exceededLimit(validToken, accessTime);
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getArgs()).thenReturn(new String[]{"city", "country", validToken});
+		rateLimitAspect.exceededLimit(joinPoint);
 
-		assertFalse(exceeded);
 		verify(tokenUsageRepository).save(any());
 	}
 
@@ -47,16 +48,16 @@ class RateLimitServiceTest {
 	@Test
 	void exceededLimit() {
 		String validToken = "valid";
-		OffsetDateTime accessTime = OffsetDateTime.now();
 
 		UserToken userToken = UserToken.builder().id(1L).token(validToken).rateLimit(5).build();
 		when(userTokenRepository.findByToken(validToken)).thenReturn(Optional.of(userToken));
-		when(tokenUsageRepository.countByTokenIdAfter(1L, accessTime.minusHours(1L))).thenReturn(5);
+		when(tokenUsageRepository.countByTokenIdAfter(eq(1L), any(OffsetDateTime.class))).thenReturn(5);
 
-		boolean exceeded = service.exceededLimit(validToken, accessTime);
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getArgs()).thenReturn(new String[]{"city", "country", validToken});
 
-		assertTrue(exceeded);
-		verify(tokenUsageRepository, times(0)).save(any());
+		assertThrows(ExceedLimitationException.class,
+				() -> rateLimitAspect.exceededLimit(joinPoint));
 	}
 
 	@Test
@@ -64,7 +65,10 @@ class RateLimitServiceTest {
 		String invalidToken = "invalid";
 		when(userTokenRepository.findByToken(invalidToken)).thenReturn(Optional.empty());
 
+		ProceedingJoinPoint joinPoint = mock(ProceedingJoinPoint.class);
+		when(joinPoint.getArgs()).thenReturn(new String[]{"city", "country", invalidToken});
+
 		assertThrows(InvalidTokenException.class,
-				() -> service.exceededLimit(invalidToken, OffsetDateTime.now()));
+				() -> rateLimitAspect.exceededLimit(joinPoint));
 	}
 }
